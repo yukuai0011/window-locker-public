@@ -2,14 +2,11 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'window_locker_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Prefer offline fonts bundled by google_fonts:setup in CI/local.
-  GoogleFonts.config.allowRuntimeFetching = false;
   runApp(const SmartWindowLockerApp());
 }
 
@@ -21,16 +18,13 @@ class SmartWindowLockerApp extends StatelessWidget {
     final base = ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       useMaterial3: true,
+      // Use a system Chinese font on Windows to avoid mixed fallback/bold issues
+      fontFamily: 'Microsoft YaHei UI',
     );
-
-    final textTheme = GoogleFonts.notoSansScTextTheme(base.textTheme);
 
     return MaterialApp(
       title: 'Smart Window Locker',
-      theme: base.copyWith(
-        textTheme: textTheme,
-        primaryTextTheme: textTheme,
-      ),
+      theme: base,
       home: const HomePage(),
       debugShowCheckedModeBanner: false,
     );

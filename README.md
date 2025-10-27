@@ -36,17 +36,9 @@ Download tips:
 - Keep all files together (e.g., `flutter_windows.dll`, `data` folder); do not run the `.exe` alone
 
 ### Chinese font rendering
-- The app uses Noto Sans SC via Google Fonts for consistent Chinese glyphs and weights.
-- CI bundles the fonts offline using `google_fonts:setup`, so the EXE runs without downloading fonts.
-- If you build locally, run:
-
-```
-flutter pub get
-dart run google_fonts:setup
-flutter pub get
-```
-
-This prevents mixed bold/regular Chinese glyphs caused by system font fallback.
+- On Windows, the app forces the system CJK font `Microsoft YaHei UI` as the default font (via ThemeData.fontFamily).
+- This avoids mixed bold/regular Chinese glyphs caused by font fallback.
+- No extra steps are required in CI or local builds.
 
 ### Notes
 - Some windows may require elevated permissions to move. If you find that certain apps do not move, try running the built EXE as Administrator.
