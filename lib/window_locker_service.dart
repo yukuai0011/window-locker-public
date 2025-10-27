@@ -194,85 +194,10 @@ class WindowLockerService {
 
   List<WindowInfo> _getAllWindows() {
     if (!_isWin32Available) return const [];
-
-    final result = <WindowInfo>[];
-
-    int enumProc(int hWnd, int lParam) {
-      try {
-        if (win.IsWindowVisible(hWnd) == 0) return 1; // continue
-
-        // Title
-        final length = win.GetWindowTextLength(hWnd);
-        final titlePtr = calloc<Uint16>(length + 1).cast<Utf16>();
-        win.GetWindowText(hWnd, titlePtr, length + 1);
-        final title = titlePtr.toDartString();
-        calloc.free(titlePtr);
-
-        if (title.isEmpty) return 1; // skip untitled windows
-
-        // Rect
-        final rect = calloc<win.RECT>();
-        win.GetWindowRect(hWnd, rect);
-
-        // Placement
-        final placement = calloc<win.WINDOWPLACEMENT>();
-        placement.ref.length = sizeOf<win.WINDOWPLACEMENT>();
-        win.GetWindowPlacement(hWnd, placement);
-        final isMin = placement.ref.showCmd == win.SW_SHOWMINIMIZED;
-        final isMax = placement.ref.showCmd == win.SW_SHOWMAXIMIZED;
-
-        // Process name
-        final pidPtr = calloc<Uint32>();
-        win.GetWindowThreadProcessId(hWnd, pidPtr);
-        final pid = pidPtr.value;
-        calloc.free(pidPtr);
-
-        String processName = 'Unknown';
-        final hProcess = win.OpenProcess(
-          win.PROCESS_QUERY_LIMITED_INFORMATION,
-          0,
-          pid,
-        );
-        if (hProcess != 0) {
-          final sizePtr = calloc<Uint32>();
-          sizePtr.value = 260;
-          final buffer = calloc<Uint16>(sizePtr.value).cast<Utf16>();
-          final ok = win.QueryFullProcessImageName(hProcess, 0, buffer, sizePtr);
-          if (ok != 0) {
-            final fullPath = buffer.toDartString();
-            processName = _basename(fullPath);
-          }
-          calloc.free(buffer);
-          calloc.free(sizePtr);
-          win.CloseHandle(hProcess);
-        }
-
-        final info = WindowInfo(
-          hwnd: hWnd,
-          title: title,
-          processName: processName,
-          left: rect.ref.left,
-          top: rect.ref.top,
-          right: rect.ref.right,
-          bottom: rect.ref.bottom,
-          isVisible: win.IsWindowVisible(hWnd) != 0,
-          isMinimized: isMin,
-          isMaximized: isMax,
-        );
-
-        calloc.free(rect);
-        calloc.free(placement);
-
-        result.add(info);
-      } catch (_) {
-        // ignore one window failure
-      }
-      return 1; // continue
-    }
-
-    final proc = Pointer.fromFunction<win.EnumWindowsProc>(enumProc, 1);
+    _enumResults.clear();
+    final proc = Pointer.fromFunction<win.EnumWindowsProc>(_enumWindowsProc, 1);
     win.EnumWindows(proc, 0);
-    return result;
+    return List<WindowInfo>.from(_enumResults);
   }
 
   RelativeWindowInfo _absoluteToRelative(WindowInfo w) {
@@ -384,4 +309,83 @@ String _basename(String fullPath) {
   final idx = path.lastIndexOf('\\');
   if (idx == -1) return path;
   return path.substring(idx + 1);
+}
+
+// =============================
+// Top-level callback for EnumWindows (must be static/top-level for FFI)
+// =============================
+
+final List<WindowInfo> _enumResults = <WindowInfo>[];
+
+int _enumWindowsProc(int hWnd, int lParam) {
+  try {
+    if (win.IsWindowVisible(hWnd) == 0) return 1; // continue
+
+    // Title
+    final length = win.GetWindowTextLength(hWnd);
+    final titlePtr = calloc<Uint16>(length + 1).cast<Utf16>();
+    win.GetWindowText(hWnd, titlePtr, length + 1);
+    final title = titlePtr.toDartString();
+    calloc.free(titlePtr);
+
+    if (title.isEmpty) return 1; // skip untitled windows
+
+    // Rect
+    final rect = calloc<win.RECT>();
+    win.GetWindowRect(hWnd, rect);
+
+    // Placement
+    final placement = calloc<win.WINDOWPLACEMENT>();
+    placement.ref.length = sizeOf<win.WINDOWPLACEMENT>();
+    win.GetWindowPlacement(hWnd, placement);
+    final isMin = placement.ref.showCmd == win.SW_SHOWMINIMIZED;
+    final isMax = placement.ref.showCmd == win.SW_SHOWMAXIMIZED;
+
+    // Process name
+    final pidPtr = calloc<Uint32>();
+    win.GetWindowThreadProcessId(hWnd, pidPtr);
+    final pid = pidPtr.value;
+    calloc.free(pidPtr);
+
+    String processName = 'Unknown';
+    final hProcess = win.OpenProcess(
+      win.PROCESS_QUERY_LIMITED_INFORMATION,
+      0,
+      pid,
+    );
+    if (hProcess != 0) {
+      final sizePtr = calloc<Uint32>();
+      sizePtr.value = 260;
+      final buffer = calloc<Uint16>(sizePtr.value).cast<Utf16>();
+      final ok = win.QueryFullProcessImageName(hProcess, 0, buffer, sizePtr);
+      if (ok != 0) {
+        final fullPath = buffer.toDartString();
+        processName = _basename(fullPath);
+      }
+      calloc.free(buffer);
+      calloc.free(sizePtr);
+      win.CloseHandle(hProcess);
+    }
+
+    _enumResults.add(
+      WindowInfo(
+        hwnd: hWnd,
+        title: title,
+        processName: processName,
+        left: rect.ref.left,
+        top: rect.ref.top,
+        right: rect.ref.right,
+        bottom: rect.ref.bottom,
+        isVisible: win.IsWindowVisible(hWnd) != 0,
+        isMinimized: isMin,
+        isMaximized: isMax,
+      ),
+    );
+
+    calloc.free(rect);
+    calloc.free(placement);
+  } catch (_) {
+    // ignore errors for individual windows
+  }
+  return 1; // continue enumeration
 }
