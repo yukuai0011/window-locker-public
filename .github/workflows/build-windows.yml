@@ -41,8 +41,8 @@ jobs:
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SmartWindowLocker-windows
+          name: SmartWindowLocker-windows-portable
           path: |
-            build/windows/x64/runner/Release/*.exe
-            build/windows/runner/Release/*.exe
+            build/windows/x64/runner/Release
+            build/windows/runner/Release
           if-no-files-found: warn

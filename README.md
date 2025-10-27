@@ -28,11 +28,12 @@ This folder includes a workflow at `.github/workflows/build-windows.yml` which:
 1) Sets up Flutter
 2) Ensures Windows desktop is enabled and platform scaffolding exists
 3) Builds a release Windows executable
-4) Uploads the `.exe` as a CI artifact
+4) Uploads the entire Windows Release folder as an artifact (portable build)
 
-Artifacts path patterns handled:
-- `build/windows/x64/runner/Release/*.exe`
-- `build/windows/runner/Release/*.exe`
+Download tips:
+- Download the artifact `SmartWindowLocker-windows-portable` from the workflow run
+- Extract the zip and run the `.exe` inside the extracted folder
+- Keep all files together (e.g., `flutter_windows.dll`, `data` folder); do not run the `.exe` alone
 
 ### Notes
 - Some windows may require elevated permissions to move. If you find that certain apps do not move, try running the built EXE as Administrator.
