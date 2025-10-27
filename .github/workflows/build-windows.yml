@@ -1,0 +1,52 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - feature/**
+    paths:
+      - '**/*.dart'
+      - 'pubspec.yaml'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Create missing platform scaffolding
+        run: flutter create .
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Windows (release)
+        run: flutter build windows --release
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartWindowLocker-windows
+          path: |
+            build/windows/x64/runner/Release/*.exe
+            build/windows/runner/Release/*.exe
+          if-no-files-found: warn

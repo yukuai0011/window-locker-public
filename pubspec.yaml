@@ -1,0 +1,21 @@
+name: smart_window_locker
+description: Smart Window Locker desktop app (Flutter + Material). Auto-locks window positions based on mouse state using Win32 APIs.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  win32: ^5.5.1
+  ffi: ^2.1.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
