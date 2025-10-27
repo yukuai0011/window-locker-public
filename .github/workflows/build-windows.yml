@@ -35,6 +35,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Prepare offline Google Fonts
+        run: |
+          dart --version
+          dart run google_fonts:setup
+
+      - name: Get dependencies (after fonts setup)
+        run: flutter pub get
+
       - name: Build Windows (release)
         run: flutter build windows --release
 

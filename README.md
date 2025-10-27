@@ -35,6 +35,19 @@ Download tips:
 - Extract the zip and run the `.exe` inside the extracted folder
 - Keep all files together (e.g., `flutter_windows.dll`, `data` folder); do not run the `.exe` alone
 
+### Chinese font rendering
+- The app uses Noto Sans SC via Google Fonts for consistent Chinese glyphs and weights.
+- CI bundles the fonts offline using `google_fonts:setup`, so the EXE runs without downloading fonts.
+- If you build locally, run:
+
+```
+flutter pub get
+dart run google_fonts:setup
+flutter pub get
+```
+
+This prevents mixed bold/regular Chinese glyphs caused by system font fallback.
+
 ### Notes
 - Some windows may require elevated permissions to move. If you find that certain apps do not move, try running the built EXE as Administrator.
 - This app only runs on Windows (uses Win32 APIs).

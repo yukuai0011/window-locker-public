@@ -2,11 +2,14 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'window_locker_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // Prefer offline fonts bundled by google_fonts:setup in CI/local.
+  GoogleFonts.config.allowRuntimeFetching = false;
   runApp(const SmartWindowLockerApp());
 }
 
@@ -15,11 +18,18 @@ class SmartWindowLockerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final base = ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+      useMaterial3: true,
+    );
+
+    final textTheme = GoogleFonts.notoSansScTextTheme(base.textTheme);
+
     return MaterialApp(
       title: 'Smart Window Locker',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+      theme: base.copyWith(
+        textTheme: textTheme,
+        primaryTextTheme: textTheme,
       ),
       home: const HomePage(),
       debugShowCheckedModeBanner: false,
@@ -193,7 +203,7 @@ class _InfoCard extends StatelessWidget {
               child: SingleChildScrollView(
                 child: SelectableText(
                   content.isEmpty ? '—' : content,
-                  style: const TextStyle(fontFamily: 'Consolas', fontSize: 13),
+                  style: const TextStyle(fontSize: 13),
                 ),
               ),
             ),
