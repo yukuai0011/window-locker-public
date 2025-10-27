@@ -3,14 +3,10 @@ name: Build Windows EXE
 on:
   push:
     branches:
-      - main
-      - master
-      - develop
-      - feature/**
-    paths:
-      - '**/*.dart'
-      - 'pubspec.yaml'
-      - '.github/workflows/**'
+      - '**'     # run on all branches
+  pull_request:
+    branches:
+      - '**'     # run on PRs targeting any branch
   workflow_dispatch:
 
 jobs:
